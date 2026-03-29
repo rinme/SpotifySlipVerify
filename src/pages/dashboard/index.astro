@@ -1,0 +1,227 @@
+---
+import DashboardLayout from "../../layouts/DashboardLayout.astro";
+
+const user = Astro.locals.user;
+---
+
+<DashboardLayout title="Dashboard" user={user}>
+  <div class="space-y-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Welcome back, {user.name}!</h1>
+      <p class="mt-1 text-gray-600">Here's an overview of your payment history.</p>
+    </div>
+
+    <!-- Financial Overview Cards -->
+    <div class="grid gap-6 md:grid-cols-3">
+      <div class="rounded-lg bg-white p-6 shadow">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Monthly Total</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900" id="monthly-total">₱0.00</p>
+            <p class="mt-1 text-xs text-gray-500">Current month</p>
+          </div>
+          <div class="rounded-full bg-blue-100 p-3">
+            <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-lg bg-white p-6 shadow">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Yearly Total</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900" id="yearly-total">₱0.00</p>
+            <p class="mt-1 text-xs text-gray-500">Current year</p>
+          </div>
+          <div class="rounded-full bg-green-100 p-3">
+            <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-lg bg-white p-6 shadow">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">All Time Total</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900" id="total">₱0.00</p>
+            <p class="mt-1 text-xs text-gray-500">Lifetime payments</p>
+          </div>
+          <div class="rounded-full bg-purple-100 p-3">
+            <svg class="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OCR Upload Section -->
+    <div class="rounded-lg bg-white p-6 shadow">
+      <h2 class="mb-4 text-xl font-semibold text-gray-900">Upload Payment Slip</h2>
+
+      <div
+        id="drop-zone"
+        class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center transition hover:border-indigo-500 cursor-pointer"
+      >
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+        </svg>
+        <p class="mt-4 text-sm text-gray-600">
+          <span class="font-semibold">Click to upload</span> or drag and drop
+        </p>
+        <p class="mt-1 text-xs text-gray-500">PNG, JPG, or PDF up to 10MB</p>
+      </div>
+
+      <input
+        type="file"
+        id="file-input"
+        class="hidden"
+        accept="image/*,.pdf"
+      />
+
+      <div id="upload-preview" class="mt-4 hidden">
+        <div class="flex items-center justify-between rounded-lg bg-gray-50 p-4">
+          <div class="flex items-center">
+            <svg class="h-8 w-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+            </svg>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-gray-900" id="file-name"></p>
+              <p class="text-xs text-gray-500" id="file-size"></p>
+            </div>
+          </div>
+          <button
+            id="remove-file"
+            class="text-red-600 hover:text-red-700"
+          >
+            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            </svg>
+          </button>
+        </div>
+
+        <button
+          id="upload-btn"
+          class="mt-4 w-full rounded-lg bg-indigo-600 px-4 py-2 text-white font-semibold shadow-md transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        >
+          Process Slip
+        </button>
+      </div>
+
+      <div id="upload-status" class="mt-4 hidden rounded-md p-3 text-sm"></div>
+    </div>
+
+    <!-- Recent Payments -->
+    <div class="rounded-lg bg-white p-6 shadow">
+      <h2 class="mb-4 text-xl font-semibold text-gray-900">Recent Payments</h2>
+      <div id="payments-list" class="space-y-3">
+        <p class="text-sm text-gray-500 text-center py-8">No payments yet. Upload your first slip above!</p>
+      </div>
+    </div>
+  </div>
+</DashboardLayout>
+
+<script>
+  // File upload handling
+  const dropZone = document.getElementById('drop-zone')!;
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const uploadPreview = document.getElementById('upload-preview')!;
+  const fileName = document.getElementById('file-name')!;
+  const fileSize = document.getElementById('file-size')!;
+  const removeFileBtn = document.getElementById('remove-file')!;
+  const uploadBtn = document.getElementById('upload-btn')!;
+  const uploadStatus = document.getElementById('upload-status')!;
+
+  let selectedFile: File | null = null;
+
+  dropZone.addEventListener('click', () => fileInput.click());
+
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('border-indigo-500', 'bg-indigo-50');
+  });
+
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('border-indigo-500', 'bg-indigo-50');
+  });
+
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-indigo-500', 'bg-indigo-50');
+    const files = e.dataTransfer?.files;
+    if (files && files.length > 0) {
+      handleFile(files[0]);
+    }
+  });
+
+  fileInput.addEventListener('change', (e) => {
+    const files = (e.target as HTMLInputElement).files;
+    if (files && files.length > 0) {
+      handleFile(files[0]);
+    }
+  });
+
+  function handleFile(file: File) {
+    selectedFile = file;
+    fileName.textContent = file.name;
+    fileSize.textContent = `${(file.size / 1024).toFixed(2)} KB`;
+    uploadPreview.classList.remove('hidden');
+    uploadStatus.classList.add('hidden');
+  }
+
+  removeFileBtn.addEventListener('click', () => {
+    selectedFile = null;
+    fileInput.value = '';
+    uploadPreview.classList.add('hidden');
+  });
+
+  uploadBtn.addEventListener('click', async () => {
+    if (!selectedFile) return;
+
+    uploadStatus.textContent = 'Processing slip... (OCR functionality will be integrated here)';
+    uploadStatus.classList.remove('hidden', 'bg-red-50', 'text-red-700', 'bg-green-50', 'text-green-700');
+    uploadStatus.classList.add('bg-blue-50', 'text-blue-700');
+
+    // Placeholder for OCR processing
+    await processSlipOCR(selectedFile);
+  });
+
+  // Placeholder OCR function
+  async function processSlipOCR(file: File): Promise<void> {
+    // Simulate processing
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    uploadStatus.textContent = 'OCR processing is ready to be integrated with an external API.';
+    uploadStatus.classList.remove('bg-blue-50', 'text-blue-700');
+    uploadStatus.classList.add('bg-green-50', 'text-green-700');
+
+    // Reset after showing message
+    setTimeout(() => {
+      selectedFile = null;
+      fileInput.value = '';
+      uploadPreview.classList.add('hidden');
+    }, 3000);
+  }
+
+  // Load financial data
+  async function loadFinancialData() {
+    try {
+      const response = await fetch('/api/payments/summary');
+      if (response.ok) {
+        const data = await response.json();
+        document.getElementById('monthly-total')!.textContent = `₱${data.monthly.toFixed(2)}`;
+        document.getElementById('yearly-total')!.textContent = `₱${data.yearly.toFixed(2)}`;
+        document.getElementById('total')!.textContent = `₱${data.total.toFixed(2)}`;
+      }
+    } catch (error) {
+      console.error('Failed to load financial data:', error);
+    }
+  }
+
+  // Load on page load
+  loadFinancialData();
+</script>

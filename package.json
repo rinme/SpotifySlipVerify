@@ -9,11 +9,23 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "init-db": "node scripts/init-db.js"
   },
   "dependencies": {
+    "@astrojs/node": "^10.0.4",
+    "@auth/core": "^0.37.4",
     "@tailwindcss/vite": "^4.2.2",
     "astro": "^6.1.1",
+    "auth-astro": "^4.2.0",
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.8.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.3.3",
     "tailwindcss": "^4.2.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10"
   }
 }
