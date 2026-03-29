@@ -14,10 +14,8 @@
   },
   "dependencies": {
     "@astrojs/node": "^10.0.4",
-    "@auth/core": "^0.37.4",
     "@tailwindcss/vite": "^4.2.2",
     "astro": "^6.1.1",
-    "auth-astro": "^4.2.0",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.8.0",
     "jsonwebtoken": "^9.0.3",

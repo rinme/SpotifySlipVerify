@@ -47,7 +47,7 @@ export const POST: APIRoute = async ({ request }) => {
         {
           status: 200,
           headers: {
-            'Set-Cookie': `session=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=604800`,
+            'Set-Cookie': `session=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=604800${import.meta.env.PROD ? '; Secure' : ''}`,
             'Content-Type': 'application/json',
           },
         }
@@ -85,7 +85,7 @@ export const POST: APIRoute = async ({ request }) => {
         {
           status: 200,
           headers: {
-            'Set-Cookie': `session=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=604800`,
+            'Set-Cookie': `session=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=604800${import.meta.env.PROD ? '; Secure' : ''}`,
             'Content-Type': 'application/json',
           },
         }

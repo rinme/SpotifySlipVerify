@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
 import Database from 'better-sqlite3';
+import { mkdirSync } from 'fs';
+import path from 'path';
 
 const MONGODB_URI = import.meta.env.MONGODB_URI;
 
@@ -33,7 +35,9 @@ let sqliteDb: Database.Database | null = null;
 
 export function getSQLiteDB(): Database.Database {
   if (!sqliteDb) {
-    sqliteDb = new Database('./data/slipverify.db');
+    const dataDir = path.resolve('./data');
+    mkdirSync(dataDir, { recursive: true });
+    sqliteDb = new Database(path.join(dataDir, 'slipverify.db'));
 
     // Create tables
     sqliteDb.exec(`

@@ -1,7 +1,13 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = import.meta.env.AUTH_SECRET || 'default-secret-change-in-production';
+const authSecret = import.meta.env.AUTH_SECRET;
+
+if (!authSecret) {
+  throw new Error('AUTH_SECRET environment variable must be set to a non-empty value');
+}
+
+const JWT_SECRET = authSecret;
 
 export interface UserPayload {
   id: string;

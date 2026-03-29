@@ -4,6 +4,9 @@ import { connectDB, getSQLiteDB } from '../../../lib/db';
 import { hashPassword } from '../../../lib/auth';
 import { getSessionFromCookie } from '../../../lib/auth';
 
+const ALLOWED_ROLES = ['admin', 'user'] as const;
+type UserRole = typeof ALLOWED_ROLES[number];
+
 export const POST: APIRoute = async ({ request }) => {
   try {
     const cookieHeader = request.headers.get('cookie');
@@ -21,6 +24,14 @@ export const POST: APIRoute = async ({ request }) => {
     if (!email || !password || !name) {
       return new Response(
         JSON.stringify({ error: 'Email, password, and name are required' }),
+        { status: 400 }
+      );
+    }
+
+    const userRole: UserRole = role || 'user';
+    if (!ALLOWED_ROLES.includes(userRole)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid role. Must be "admin" or "user"' }),
         { status: 400 }
       );
     }
@@ -43,7 +54,7 @@ export const POST: APIRoute = async ({ request }) => {
         email: email.toLowerCase(),
         password: hashedPassword,
         name,
-        role: role || 'user',
+        role: userRole,
       });
 
       await user.save();
@@ -82,7 +93,7 @@ export const POST: APIRoute = async ({ request }) => {
         email.toLowerCase(),
         hashedPassword,
         name,
-        role || 'user'
+        userRole
       );
 
       return new Response(
@@ -92,7 +103,7 @@ export const POST: APIRoute = async ({ request }) => {
             id: result.lastInsertRowid,
             email: email.toLowerCase(),
             name,
-            role: role || 'user',
+            role: userRole,
           },
         }),
         { status: 201 }

@@ -168,7 +168,7 @@ const user = Astro.locals.user;
   </div>
 </DashboardLayout>
 
-<script>
+<script lang="ts">
   // Load admin statistics
   async function loadAdminStats() {
     try {
@@ -198,25 +198,46 @@ const user = Astro.locals.user;
           return;
         }
 
-        tbody.innerHTML = users.map((user: any) => `
-          <tr>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.name}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.email}</td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'
-              }">
-                ${user.role}
-              </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              ${new Date(user.createdAt).toLocaleDateString()}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              <button class="text-indigo-600 hover:text-indigo-900">View</button>
-            </td>
-          </tr>
-        `).join('');
+        tbody.innerHTML = '';
+
+        users.forEach((user: any) => {
+          const tr = document.createElement('tr');
+
+          const nameTd = document.createElement('td');
+          nameTd.className = 'px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900';
+          nameTd.textContent = user.name;
+          tr.appendChild(nameTd);
+
+          const emailTd = document.createElement('td');
+          emailTd.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500';
+          emailTd.textContent = user.email;
+          tr.appendChild(emailTd);
+
+          const roleTd = document.createElement('td');
+          roleTd.className = 'px-6 py-4 whitespace-nowrap';
+          const roleSpan = document.createElement('span');
+          roleSpan.className =
+            'inline-flex rounded-full px-2 text-xs font-semibold leading-5 ' +
+            (user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800');
+          roleSpan.textContent = user.role;
+          roleTd.appendChild(roleSpan);
+          tr.appendChild(roleTd);
+
+          const createdTd = document.createElement('td');
+          createdTd.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500';
+          createdTd.textContent = new Date(user.createdAt).toLocaleDateString();
+          tr.appendChild(createdTd);
+
+          const actionsTd = document.createElement('td');
+          actionsTd.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500';
+          const viewButton = document.createElement('button');
+          viewButton.className = 'text-indigo-600 hover:text-indigo-900';
+          viewButton.textContent = 'View';
+          actionsTd.appendChild(viewButton);
+          tr.appendChild(actionsTd);
+
+          tbody.appendChild(tr);
+        });
       }
     } catch (error) {
       console.error('Failed to load users:', error);

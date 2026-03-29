@@ -1,6 +1,6 @@
-import { connectDB, getSQLiteDB } from './src/lib/db.ts';
-import { hashPassword } from './src/lib/auth.ts';
-import User from './src/models/User.ts';
+import { connectDB, getSQLiteDB } from '../src/lib/db.ts';
+import { hashPassword } from '../src/lib/auth.ts';
+import User from '../src/models/User.ts';
 
 async function initializeDatabase() {
   console.log('Initializing database...');

@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import Payment from '../../../models/Payment';
 import { connectDB, getSQLiteDB } from '../../../lib/db';
 import { getSessionFromCookie } from '../../../lib/auth';
+import mongoose from 'mongoose';
 
 export const GET: APIRoute = async ({ request }) => {
   try {
@@ -22,12 +23,22 @@ export const GET: APIRoute = async ({ request }) => {
     const mongoConnected = await connectDB();
 
     if (mongoConnected) {
-      // Use MongoDB
+      // Use MongoDB - convert session.id string to ObjectId for matching
+      let userObjectId: mongoose.Types.ObjectId;
+      try {
+        userObjectId = new mongoose.Types.ObjectId(session.id);
+      } catch {
+        return new Response(
+          JSON.stringify({ error: 'Invalid user ID' }),
+          { status: 400 }
+        );
+      }
+
       const [monthlyPayments, yearlyPayments, totalPayments] = await Promise.all([
         Payment.aggregate([
           {
             $match: {
-              userId: session.id,
+              userId: userObjectId,
               month: currentMonth,
               year: currentYear,
               status: 'verified'
@@ -43,7 +54,7 @@ export const GET: APIRoute = async ({ request }) => {
         Payment.aggregate([
           {
             $match: {
-              userId: session.id,
+              userId: userObjectId,
               year: currentYear,
               status: 'verified'
             }
@@ -58,7 +69,7 @@ export const GET: APIRoute = async ({ request }) => {
         Payment.aggregate([
           {
             $match: {
-              userId: session.id,
+              userId: userObjectId,
               status: 'verified'
             }
           },
