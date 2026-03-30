@@ -1,6 +1,5 @@
-import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
-import Database from 'better-sqlite3';
+import { Database } from 'bun:sqlite';
 import { mkdirSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -9,7 +8,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MONGODB_URI = process.env.MONGODB_URI;
 
 async function hashPassword(password) {
-  return bcrypt.hash(password, 10);
+  return Bun.password.hash(password, {
+    algorithm: 'bcrypt',
+    cost: 10,
+  });
 }
 
 function getSQLiteDB() {

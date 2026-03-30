@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import Database from 'better-sqlite3';
+import { Database } from 'bun:sqlite';
 import { mkdirSync } from 'fs';
 import path from 'path';
 
@@ -31,9 +31,9 @@ export async function connectDB() {
 }
 
 // SQLite Connection (fallback)
-let sqliteDb: Database.Database | null = null;
+let sqliteDb: Database | null = null;
 
-export function getSQLiteDB(): Database.Database {
+export function getSQLiteDB(): Database {
   if (!sqliteDb) {
     const dataDir = path.resolve('./data');
     mkdirSync(dataDir, { recursive: true });

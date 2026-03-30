@@ -1,5 +1,6 @@
 import type { MiddlewareHandler } from 'astro';
 import { getSessionFromCookie } from './lib/auth';
+import { getSecurityHeaders } from './lib/security';
 
 export const onRequest: MiddlewareHandler = async ({ request, locals, redirect }, next) => {
   const cookieHeader = request.headers.get('cookie');
@@ -30,5 +31,14 @@ export const onRequest: MiddlewareHandler = async ({ request, locals, redirect }
     return redirect('/dashboard');
   }
 
-  return next();
+  // Continue to the route handler
+  const response = await next();
+
+  // Add security headers to all responses
+  const securityHeaders = getSecurityHeaders();
+  for (const [key, value] of Object.entries(securityHeaders)) {
+    response.headers.set(key, value);
+  }
+
+  return response;
 };

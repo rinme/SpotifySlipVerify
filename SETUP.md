@@ -6,7 +6,7 @@ This guide will help you get the Slip Verification System up and running quickly
 
 ### 1. Install Dependencies
 ```bash
-npm install
+bun install
 ```
 
 ### 2. Set Up Environment
@@ -24,7 +24,7 @@ openssl rand -base64 32
 Create the first admin user:
 
 ```bash
-npm run init-db
+bun run init-db
 ```
 
 This creates:
@@ -33,7 +33,7 @@ This creates:
 
 ### 4. Start Development Server
 ```bash
-npm run dev
+bun run dev
 ```
 
 Visit: http://localhost:4321
@@ -145,7 +145,7 @@ The application includes a placeholder function ready for OCR integration.
 
 ### 1. Build the Application
 ```bash
-npm run build
+bun run build
 ```
 
 ### 2. Environment Variables
@@ -158,9 +158,9 @@ PUBLIC_APP_URL=https://yourdomain.com
 
 ### 3. Start Production Server
 ```bash
-npm run preview
+bun run preview
 # or use a process manager like PM2:
-# pm2 start npm --name "slip-verify" -- run preview
+# pm2 start bun --name "slip-verify" -- run preview
 ```
 
 ### 4. Reverse Proxy (Nginx Example)
@@ -185,7 +185,7 @@ server {
 ### Build Errors
 If you encounter TypeScript errors:
 ```bash
-npm run astro check
+bun run astro check
 ```
 
 ### Database Connection Issues
@@ -200,7 +200,7 @@ npm run astro check
 ### Port Already in Use
 ```bash
 # Change the port in astro.config.mjs or:
-npm run dev -- --port 3000
+bun run dev -- --port 3000
 ```
 
 ## Default Credentials

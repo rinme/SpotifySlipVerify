@@ -17,7 +17,7 @@ const user = Astro.locals.user;
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Monthly Total</p>
-            <p class="mt-2 text-3xl font-bold text-gray-900" id="monthly-total">₱0.00</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900" id="monthly-total">฿0.00</p>
             <p class="mt-1 text-xs text-gray-500">Current month</p>
           </div>
           <div class="rounded-full bg-blue-100 p-3">
@@ -32,7 +32,7 @@ const user = Astro.locals.user;
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Yearly Total</p>
-            <p class="mt-2 text-3xl font-bold text-gray-900" id="yearly-total">₱0.00</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900" id="yearly-total">฿0.00</p>
             <p class="mt-1 text-xs text-gray-500">Current year</p>
           </div>
           <div class="rounded-full bg-green-100 p-3">
@@ -47,7 +47,7 @@ const user = Astro.locals.user;
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">All Time Total</p>
-            <p class="mt-2 text-3xl font-bold text-gray-900" id="total">₱0.00</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900" id="total">฿0.00</p>
             <p class="mt-1 text-xs text-gray-500">Lifetime payments</p>
           </div>
           <div class="rounded-full bg-purple-100 p-3">
@@ -125,16 +125,16 @@ const user = Astro.locals.user;
   </div>
 </DashboardLayout>
 
-<script lang="ts">
+<script>
   // File upload handling
-  const dropZone = document.getElementById('drop-zone')!;
-  const fileInput = document.getElementById('file-input') as HTMLInputElement;
-  const uploadPreview = document.getElementById('upload-preview')!;
-  const fileName = document.getElementById('file-name')!;
-  const fileSize = document.getElementById('file-size')!;
-  const removeFileBtn = document.getElementById('remove-file')!;
-  const uploadBtn = document.getElementById('upload-btn')!;
-  const uploadStatus = document.getElementById('upload-status')!;
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  const uploadPreview = document.getElementById('upload-preview');
+  const fileName = document.getElementById('file-name');
+  const fileSize = document.getElementById('file-size');
+  const removeFileBtn = document.getElementById('remove-file');
+  const uploadBtn = document.getElementById('upload-btn');
+  const uploadStatus = document.getElementById('upload-status');
 
   let selectedFile: File | null = null;
 
@@ -159,7 +159,7 @@ const user = Astro.locals.user;
   });
 
   fileInput.addEventListener('change', (e) => {
-    const files = (e.target as HTMLInputElement).files;
+    const files = (e.target).files;
     if (files && files.length > 0) {
       handleFile(files[0]);
     }
@@ -213,9 +213,9 @@ const user = Astro.locals.user;
       const response = await fetch('/api/payments/summary');
       if (response.ok) {
         const data = await response.json();
-        document.getElementById('monthly-total')!.textContent = `₱${data.monthly.toFixed(2)}`;
-        document.getElementById('yearly-total')!.textContent = `₱${data.yearly.toFixed(2)}`;
-        document.getElementById('total')!.textContent = `₱${data.total.toFixed(2)}`;
+        document.getElementById('monthly-total').textContent = `฿${data.monthly.toFixed(2)}`;
+        document.getElementById('yearly-total').textContent = `฿${data.yearly.toFixed(2)}`;
+        document.getElementById('total').textContent = `฿${data.total.toFixed(2)}`;
       }
     } catch (error) {
       console.error('Failed to load financial data:', error);

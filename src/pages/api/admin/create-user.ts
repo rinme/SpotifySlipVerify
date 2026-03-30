@@ -1,11 +1,11 @@
 import type { APIRoute } from 'astro';
 import User from '../../../models/User';
 import { connectDB, getSQLiteDB } from '../../../lib/db';
-import { hashPassword } from '../../../lib/auth';
-import { getSessionFromCookie } from '../../../lib/auth';
+import { hashPassword, getSessionFromCookie } from '../../../lib/auth';
+import { checkRateLimit, getClientIP, validateEmail, validatePassword, sanitizeString } from '../../../lib/security';
 
 const ALLOWED_ROLES = ['admin', 'user'] as const;
-type UserRole = typeof ALLOWED_ROLES[number];
+type UserRole = (typeof ALLOWED_ROLES)[number];
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -13,47 +13,61 @@ export const POST: APIRoute = async ({ request }) => {
     const session = getSessionFromCookie(cookieHeader);
 
     if (!session || session.role !== 'admin') {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 403 });
+    }
+
+    // Rate limiting
+    const clientIP = getClientIP(request);
+    const rateLimit = checkRateLimit(`createUser:${clientIP}`, 'createUser');
+    if (!rateLimit.allowed) {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 403 }
+        JSON.stringify({ error: `Rate limit exceeded. Try again in ${rateLimit.retryAfter} seconds.` }),
+        { status: 429, headers: { 'Retry-After': rateLimit.retryAfter!.toString() } }
       );
     }
 
     const { email, password, name, role } = await request.json();
 
     if (!email || !password || !name) {
-      return new Response(
-        JSON.stringify({ error: 'Email, password, and name are required' }),
-        { status: 400 }
-      );
+      return new Response(JSON.stringify({ error: 'Email, password, and name are required' }), { status: 400 });
+    }
+
+    // Validate email
+    if (!validateEmail(email)) {
+      return new Response(JSON.stringify({ error: 'Invalid email format' }), { status: 400 });
+    }
+
+    // Validate password
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      return new Response(JSON.stringify({ error: passwordValidation.errors.join('. ') }), { status: 400 });
+    }
+
+    // Sanitize name
+    const sanitizedName = sanitizeString(name);
+    if (sanitizedName.length < 2) {
+      return new Response(JSON.stringify({ error: 'Name must be at least 2 characters' }), { status: 400 });
     }
 
     const userRole: UserRole = role || 'user';
     if (!ALLOWED_ROLES.includes(userRole)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid role. Must be "admin" or "user"' }),
-        { status: 400 }
-      );
+      return new Response(JSON.stringify({ error: 'Invalid role. Must be "admin" or "user"' }), { status: 400 });
     }
 
     const hashedPassword = await hashPassword(password);
     const mongoConnected = await connectDB();
 
     if (mongoConnected) {
-      // Use MongoDB
       const existingUser = await User.findOne({ email: email.toLowerCase() });
 
       if (existingUser) {
-        return new Response(
-          JSON.stringify({ error: 'User already exists' }),
-          { status: 400 }
-        );
+        return new Response(JSON.stringify({ error: 'User already exists' }), { status: 400 });
       }
 
       const user = new User({
         email: email.toLowerCase(),
         password: hashedPassword,
-        name,
+        name: sanitizedName,
         role: userRole,
       });
 
@@ -72,16 +86,12 @@ export const POST: APIRoute = async ({ request }) => {
         { status: 201 }
       );
     } else {
-      // Use SQLite
       const db = getSQLiteDB();
       const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
       const existingUser = stmt.get(email.toLowerCase());
 
       if (existingUser) {
-        return new Response(
-          JSON.stringify({ error: 'User already exists' }),
-          { status: 400 }
-        );
+        return new Response(JSON.stringify({ error: 'User already exists' }), { status: 400 });
       }
 
       const insertStmt = db.prepare(`
@@ -89,12 +99,7 @@ export const POST: APIRoute = async ({ request }) => {
         VALUES (?, ?, ?, ?)
       `);
 
-      const result = insertStmt.run(
-        email.toLowerCase(),
-        hashedPassword,
-        name,
-        userRole
-      );
+      const result = insertStmt.run(email.toLowerCase(), hashedPassword, sanitizedName, userRole);
 
       return new Response(
         JSON.stringify({
@@ -102,7 +107,7 @@ export const POST: APIRoute = async ({ request }) => {
           user: {
             id: result.lastInsertRowid,
             email: email.toLowerCase(),
-            name,
+            name: sanitizedName,
             role: userRole,
           },
         }),
@@ -111,9 +116,6 @@ export const POST: APIRoute = async ({ request }) => {
     }
   } catch (error) {
     console.error('Create user error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500 }
-    );
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 };

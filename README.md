@@ -14,7 +14,7 @@ A modern web application for managing and verifying payment slips using OCR tech
 
 ## Prerequisites
 
-- Node.js >= 22.12.0
+- Bun >= 1.0.0
 - MongoDB (optional - SQLite will be used if not configured)
 
 ## Installation
@@ -27,7 +27,7 @@ cd SpotifySlipVerify
 
 2. Install dependencies:
 ```bash
-npm install
+bun install
 ```
 
 3. Configure environment variables:
@@ -42,7 +42,7 @@ Edit `.env` and set your configuration:
 
 4. Initialize the database and create admin user:
 ```bash
-npm run init-db
+bun run init-db
 ```
 
 This will create an admin user with:
@@ -55,7 +55,7 @@ This will create an admin user with:
 
 Start the development server:
 ```bash
-npm run dev
+bun run dev
 ```
 
 The application will be available at `http://localhost:4321`
@@ -63,12 +63,12 @@ The application will be available at `http://localhost:4321`
 ## Build for Production
 
 ```bash
-npm run build
+bun run build
 ```
 
 Preview the production build:
 ```bash
-npm run preview
+bun run preview
 ```
 
 ## Project Structure

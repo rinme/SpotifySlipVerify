@@ -2,30 +2,46 @@ import type { APIRoute } from 'astro';
 import User from '../../../models/User';
 import { connectDB, getSQLiteDB } from '../../../lib/db';
 import { verifyPassword, generateToken } from '../../../lib/auth';
+import { checkRateLimit, resetRateLimit, getClientIP, validateEmail } from '../../../lib/security';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    const clientIP = getClientIP(request);
+    const rateLimitKey = `login:${clientIP}`;
+
+    // Check rate limit
+    const rateLimit = checkRateLimit(rateLimitKey, 'login');
+    if (!rateLimit.allowed) {
+      return new Response(
+        JSON.stringify({ error: `Too many login attempts. Try again in ${rateLimit.retryAfter} seconds.` }),
+        {
+          status: 429,
+          headers: { 'Retry-After': rateLimit.retryAfter!.toString() },
+        }
+      );
+    }
+
     const { email, password } = await request.json();
 
     if (!email || !password) {
-      return new Response(
-        JSON.stringify({ error: 'Email and password are required' }),
-        { status: 400 }
-      );
+      return new Response(JSON.stringify({ error: 'Email and password are required' }), { status: 400 });
+    }
+
+    if (!validateEmail(email)) {
+      return new Response(JSON.stringify({ error: 'Invalid email format' }), { status: 400 });
     }
 
     const mongoConnected = await connectDB();
 
     if (mongoConnected) {
-      // Use MongoDB
       const user = await User.findOne({ email: email.toLowerCase() });
 
       if (!user || !(await verifyPassword(password, user.password))) {
-        return new Response(
-          JSON.stringify({ error: 'Invalid credentials' }),
-          { status: 401 }
-        );
+        return new Response(JSON.stringify({ error: 'Invalid credentials' }), { status: 401 });
       }
+
+      // Reset rate limit on successful login
+      resetRateLimit(rateLimitKey);
 
       const token = generateToken({
         id: user._id.toString(),
@@ -53,17 +69,16 @@ export const POST: APIRoute = async ({ request }) => {
         }
       );
     } else {
-      // Use SQLite
       const db = getSQLiteDB();
       const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
       const user = stmt.get(email.toLowerCase()) as any;
 
       if (!user || !(await verifyPassword(password, user.password))) {
-        return new Response(
-          JSON.stringify({ error: 'Invalid credentials' }),
-          { status: 401 }
-        );
+        return new Response(JSON.stringify({ error: 'Invalid credentials' }), { status: 401 });
       }
+
+      // Reset rate limit on successful login
+      resetRateLimit(rateLimitKey);
 
       const token = generateToken({
         id: user.id.toString(),
@@ -93,9 +108,6 @@ export const POST: APIRoute = async ({ request }) => {
     }
   } catch (error) {
     console.error('Login error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500 }
-    );
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 };

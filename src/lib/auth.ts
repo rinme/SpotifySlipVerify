@@ -1,4 +1,3 @@
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 const authSecret = import.meta.env.AUTH_SECRET;
@@ -17,11 +16,14 @@ export interface UserPayload {
 }
 
 export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 10);
+  return Bun.password.hash(password, {
+    algorithm: 'bcrypt',
+    cost: 10,
+  });
 }
 
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(password, hash);
+  return Bun.password.verify(password, hash);
 }
 
 export function generateToken(user: UserPayload): string {

@@ -63,17 +63,17 @@ import Layout from "../layouts/Layout.astro";
   </div>
 </Layout>
 
-<script lang="ts">
-  const form = document.getElementById('login-form') as HTMLFormElement;
-  const errorDiv = document.getElementById('error-message') as HTMLDivElement;
+<script>
+  const form = document.getElementById('login-form');
+  const errorDiv = document.getElementById('error-message');
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     errorDiv.classList.add('hidden');
 
     const formData = new FormData(form);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
+    const email = formData.get('email');
+    const password = formData.get('password');
 
     try {
       const response = await fetch('/api/auth/login', {
@@ -88,7 +88,7 @@ import Layout from "../layouts/Layout.astro";
 
       if (response.ok) {
         // Redirect based on role
-        if (data.user.role === 'admin') {
+        if (data.user && data.user.role === 'admin') {
           window.location.href = '/admin';
         } else {
           window.location.href = '/dashboard';
@@ -98,6 +98,7 @@ import Layout from "../layouts/Layout.astro";
         errorDiv.classList.remove('hidden');
       }
     } catch (error) {
+      console.error('Login error:', error);
       errorDiv.textContent = 'An error occurred. Please try again.';
       errorDiv.classList.remove('hidden');
     }
