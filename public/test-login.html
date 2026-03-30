@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Test</title>
+</head>
+<body>
+    <h1>Login API Test</h1>
+    <form id="test-form">
+        <input type="email" id="email" value="admin@slipverify.com" placeholder="Email"><br><br>
+        <input type="password" id="password" value="admin123" placeholder="Password"><br><br>
+        <button type="submit">Test Login</button>
+    </form>
+    <div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;"></div>
+
+    <script>
+        const form = document.getElementById('test-form');
+        const resultDiv = document.getElementById('result');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            resultDiv.innerHTML = 'Testing...';
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                console.log('Sending request...');
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `<strong style="color: green;">โ SUCCESS!</strong><br>
+                        User: ${data.user.name}<br>
+                        Role: ${data.user.role}<br>
+                        <br>
+                        Redirecting to /${data.user.role === 'admin' ? 'admin' : 'dashboard'}...`;
+                    
+                    setTimeout(() => {
+                        window.location.href = data.user.role === 'admin' ? '/admin' : '/dashboard';
+                    }, 1000);
+                } else {
+                    resultDiv.innerHTML = `<strong style="color: red;">โ ERROR:</strong> ${data.error}`;
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                resultDiv.innerHTML = `<strong style="color: red;">โ EXCEPTION:</strong> ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,11 +1,55 @@
 ---
-import Home from "../contents/Home.astro";
 import Layout from "../layouts/Layout.astro";
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 ---
 
 <Layout>
-    <Home />
+  <div class="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4">
+    <div class="max-w-2xl text-center">
+      <h1 class="mb-6 text-5xl font-bold text-gray-900">
+        Slip Verification System
+      </h1>
+      <p class="mb-8 text-xl text-gray-600">
+        Streamline your payment verification process with our OCR-powered slip verification platform.
+        Track, verify, and manage payment slips efficiently.
+      </p>
+      <div class="flex flex-col gap-4 sm:flex-row sm:justify-center">
+        <a
+          href="/login"
+          class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-8 py-3 text-lg font-semibold text-white shadow-lg transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        >
+          Go to Dashboard
+        </a>
+        <a
+          href="#features"
+          class="inline-flex items-center justify-center rounded-lg border-2 border-gray-300 bg-white px-8 py-3 text-lg font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
+        >
+          Learn More
+        </a>
+      </div>
+
+      <div id="features" class="mt-16 grid gap-8 text-left sm:grid-cols-3">
+        <div class="rounded-lg bg-white p-6 shadow-md">
+          <div class="mb-4 text-3xl">🔒</div>
+          <h3 class="mb-2 text-lg font-semibold text-gray-900">Secure Access</h3>
+          <p class="text-gray-600">
+            Invite-only authentication ensures only authorized users can access the system.
+          </p>
+        </div>
+        <div class="rounded-lg bg-white p-6 shadow-md">
+          <div class="mb-4 text-3xl">📊</div>
+          <h3 class="mb-2 text-lg font-semibold text-gray-900">Track Payments</h3>
+          <p class="text-gray-600">
+            Monitor monthly, yearly, and total payment statistics at a glance.
+          </p>
+        </div>
+        <div class="rounded-lg bg-white p-6 shadow-md">
+          <div class="mb-4 text-3xl">🤖</div>
+          <h3 class="mb-2 text-lg font-semibold text-gray-900">OCR Ready</h3>
+          <p class="text-gray-600">
+            Upload payment slips for automatic verification with OCR technology.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 </Layout>
