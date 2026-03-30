@@ -23,14 +23,14 @@ export const GET: APIRoute = async ({ request }) => {
     const mongoConnected = await connectDB();
 
     if (mongoConnected) {
-      // Use MongoDB
-      const [monthlyPayments, yearlyPayments, totalPayments, userCount] = await Promise.all([
+      // Use MongoDB - only count approved payments
+      const [monthlyPayments, yearlyPayments, totalPayments, userCount, pendingCount] = await Promise.all([
         Payment.aggregate([
           {
             $match: {
               month: currentMonth,
               year: currentYear,
-              status: 'verified'
+              status: 'approved'
             }
           },
           {
@@ -44,7 +44,7 @@ export const GET: APIRoute = async ({ request }) => {
           {
             $match: {
               year: currentYear,
-              status: 'verified'
+              status: 'approved'
             }
           },
           {
@@ -57,7 +57,7 @@ export const GET: APIRoute = async ({ request }) => {
         Payment.aggregate([
           {
             $match: {
-              status: 'verified'
+              status: 'approved'
             }
           },
           {
@@ -67,7 +67,8 @@ export const GET: APIRoute = async ({ request }) => {
             }
           }
         ]),
-        User.countDocuments()
+        User.countDocuments(),
+        Payment.countDocuments({ status: 'pending' })
       ]);
 
       return new Response(
@@ -75,31 +76,36 @@ export const GET: APIRoute = async ({ request }) => {
           monthly: monthlyPayments[0]?.total || 0,
           yearly: yearlyPayments[0]?.total || 0,
           total: totalPayments[0]?.total || 0,
-          userCount
+          userCount,
+          pendingCount
         }),
         { status: 200 }
       );
     } else {
-      // Use SQLite
+      // Use SQLite - only count approved payments
       const db = getSQLiteDB();
 
       const monthly = db.prepare(`
         SELECT SUM(amount) as total FROM payments
-        WHERE month = ? AND year = ? AND status = 'verified'
+        WHERE month = ? AND year = ? AND status = 'approved'
       `).get(currentMonth, currentYear) as { total: number | null };
 
       const yearly = db.prepare(`
         SELECT SUM(amount) as total FROM payments
-        WHERE year = ? AND status = 'verified'
+        WHERE year = ? AND status = 'approved'
       `).get(currentYear) as { total: number | null };
 
       const total = db.prepare(`
         SELECT SUM(amount) as total FROM payments
-        WHERE status = 'verified'
+        WHERE status = 'approved'
       `).get() as { total: number | null };
 
       const userCount = db.prepare(`
         SELECT COUNT(*) as count FROM users
+      `).get() as { count: number };
+
+      const pendingCount = db.prepare(`
+        SELECT COUNT(*) as count FROM payments WHERE status = 'pending'
       `).get() as { count: number };
 
       return new Response(
@@ -107,7 +113,8 @@ export const GET: APIRoute = async ({ request }) => {
           monthly: monthly.total || 0,
           yearly: yearly.total || 0,
           total: total.total || 0,
-          userCount: userCount.count
+          userCount: userCount.count,
+          pendingCount: pendingCount.count
         }),
         { status: 200 }
       );

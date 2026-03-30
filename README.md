@@ -129,30 +129,43 @@ MONGODB_URI=mongodb://localhost:27017/slipverify
 If `MONGODB_URI` is not set, the application automatically uses SQLite.
 Database file: `./data/slipverify.db`
 
-## OCR Integration
+## Slip Verification (SlipOK API)
 
-The application includes a placeholder function `processSlipOCR()` for OCR integration.
+The application uses [SlipOK](https://slipok.com) API to verify Thai bank payment slips via QR code scanning.
 
-**To integrate with an OCR service:**
+### Setup
 
-1. Implement the `processSlipOCR()` function in `src/pages/dashboard/index.astro`
-2. Add your OCR API credentials to `.env`
-3. Parse the OCR response and extract payment information
-4. Create a payment record in the database
+1. Register at [slipok.com](https://slipok.com) and get your API credentials
+2. Add credentials to `.env`:
+```bash
+SLIPOK_BRANCH_ID=your-branch-id
+SLIPOK_API_KEY=your-api-key
+```
 
-Example OCR services:
-- Tesseract.js
-- Google Cloud Vision API
-- AWS Textract
-- Azure Computer Vision
+### How it works
+
+1. User uploads an image of their payment slip (drag & drop or click to select)
+2. System automatically scans and extracts QR code data using jsQR
+3. Extracted data is sent to SlipOK API for verification
+4. Verified payments are automatically recorded with full transaction details
+
+### Verified Data
+
+The API returns:
+- Transaction reference number
+- Amount
+- Sender/Receiver bank and account details
+- Transaction date and time
 
 ## Security Notes
 
-- All passwords are hashed using bcryptjs
+- All passwords are hashed using Bun's native password API (bcrypt)
 - Authentication uses JWT tokens stored in HttpOnly cookies
 - Middleware protects dashboard and admin routes
 - Admin endpoints require admin role verification
 - CSRF protection via SameSite cookies
+- Rate limiting on authentication and slip verification
+- Security headers (CSP, X-Frame-Options, etc.)
 
 ## API Endpoints
 
@@ -162,11 +175,16 @@ Example OCR services:
 
 ### Admin
 - `POST /api/admin/create-user` - Create new user (admin only)
-- `GET /api/admin/users` - List all users (admin only)
+- `GET /api/admin/users` - List all users with pagination/search (admin only)
+- `GET /api/admin/users/[id]` - Get single user (admin only)
+- `PUT /api/admin/users/[id]` - Update user (admin only)
+- `DELETE /api/admin/users/[id]` - Delete user (admin only)
 - `GET /api/admin/stats` - Get global statistics (admin only)
 
 ### Payments
 - `GET /api/payments/summary` - Get user payment summary
+- `GET /api/payments/recent` - Get recent payments
+- `POST /api/slip/verify` - Verify payment slip via SlipOK API
 
 ## Environment Variables
 
@@ -175,6 +193,8 @@ Example OCR services:
 | `MONGODB_URI` | No | SQLite | MongoDB connection string |
 | `AUTH_SECRET` | Yes | - | JWT secret key |
 | `PUBLIC_APP_URL` | Yes | http://localhost:4321 | Application URL |
+| `SLIPOK_BRANCH_ID` | Yes | - | SlipOK branch ID |
+| `SLIPOK_API_KEY` | Yes | - | SlipOK API key |
 
 ## License
 

@@ -59,44 +59,34 @@ const user = Astro.locals.user;
       </div>
     </div>
 
-    <!-- OCR Upload Section -->
+    <!-- Slip Verification Section -->
     <div class="rounded-lg bg-white p-6 shadow">
-      <h2 class="mb-4 text-xl font-semibold text-gray-900">Upload Payment Slip</h2>
+      <h2 class="mb-4 text-xl font-semibold text-gray-900">Verify Payment Slip</h2>
+      <p class="mb-4 text-sm text-gray-600">Upload an image of your payment slip. The QR code will be automatically scanned and verified.</p>
 
+      <!-- Upload Area -->
       <div
         id="drop-zone"
-        class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center transition hover:border-indigo-500 cursor-pointer"
+        class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center transition hover:border-indigo-500 cursor-pointer"
       >
         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
         </svg>
         <p class="mt-4 text-sm text-gray-600">
-          <span class="font-semibold">Click to upload</span> or drag and drop
+          <span class="font-semibold text-indigo-600">Click to upload</span> or drag and drop
         </p>
-        <p class="mt-1 text-xs text-gray-500">PNG, JPG, or PDF up to 10MB</p>
+        <p class="mt-1 text-xs text-gray-500">PNG, JPG up to 10MB - QR code will be auto-detected</p>
       </div>
 
-      <input
-        type="file"
-        id="file-input"
-        class="hidden"
-        accept="image/*,.pdf"
-      />
+      <input type="file" id="file-input" class="hidden" accept="image/*" />
 
-      <div id="upload-preview" class="mt-4 hidden">
-        <div class="flex items-center justify-between rounded-lg bg-gray-50 p-4">
-          <div class="flex items-center">
-            <svg class="h-8 w-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
-            </svg>
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-900" id="file-name"></p>
-              <p class="text-xs text-gray-500" id="file-size"></p>
-            </div>
-          </div>
+      <!-- Image Preview -->
+      <div id="image-preview" class="mt-4 hidden">
+        <div class="relative rounded-lg overflow-hidden bg-gray-100">
+          <img id="preview-img" class="max-h-64 mx-auto" alt="Slip preview" />
           <button
-            id="remove-file"
-            class="text-red-600 hover:text-red-700"
+            id="remove-image"
+            class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
           >
             <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
@@ -104,15 +94,54 @@ const user = Astro.locals.user;
           </button>
         </div>
 
+        <div id="scan-status" class="mt-3 text-center">
+          <div id="scanning" class="hidden">
+            <div class="inline-flex items-center gap-2 text-indigo-600">
+              <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Scanning QR code...</span>
+            </div>
+          </div>
+          <div id="qr-found" class="hidden text-green-600 font-medium">
+            ✓ QR Code detected
+          </div>
+          <div id="qr-not-found" class="hidden text-red-600">
+            ✗ No QR code found. Please upload a clearer image.
+          </div>
+        </div>
+
         <button
-          id="upload-btn"
-          class="mt-4 w-full rounded-lg bg-indigo-600 px-4 py-2 text-white font-semibold shadow-md transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          id="verify-btn"
+          disabled
+          class="mt-4 w-full rounded-lg bg-indigo-600 px-4 py-2 text-white font-semibold shadow-md transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Process Slip
+          Verify Slip
         </button>
       </div>
 
-      <div id="upload-status" class="mt-4 hidden rounded-md p-3 text-sm"></div>
+      <div id="verify-status" class="mt-4 hidden rounded-md p-3 text-sm"></div>
+
+      <!-- Verification Result -->
+      <div id="verify-result" class="mt-4 hidden rounded-lg border border-green-200 bg-green-50 p-4">
+        <h3 class="font-semibold text-green-800 mb-2">✓ Slip Verified Successfully</h3>
+        <div class="grid grid-cols-2 gap-2 text-sm">
+          <div class="text-gray-600">Amount:</div>
+          <div class="font-medium text-gray-900" id="result-amount"></div>
+          <div class="text-gray-600">Transaction Ref:</div>
+          <div class="font-medium text-gray-900" id="result-ref"></div>
+          <div class="text-gray-600">From:</div>
+          <div class="font-medium text-gray-900" id="result-sender"></div>
+          <div class="text-gray-600">To:</div>
+          <div class="font-medium text-gray-900" id="result-receiver"></div>
+          <div class="text-gray-600">Date/Time:</div>
+          <div class="font-medium text-gray-900" id="result-datetime"></div>
+        </div>
+      </div>
+
+      <!-- Hidden canvas for QR processing -->
+      <canvas id="qr-canvas" class="hidden"></canvas>
     </div>
 
     <!-- Recent Payments -->
@@ -126,18 +155,25 @@ const user = Astro.locals.user;
 </DashboardLayout>
 
 <script>
-  // File upload handling
-  const dropZone = document.getElementById('drop-zone');
-  const fileInput = document.getElementById('file-input');
-  const uploadPreview = document.getElementById('upload-preview');
-  const fileName = document.getElementById('file-name');
-  const fileSize = document.getElementById('file-size');
-  const removeFileBtn = document.getElementById('remove-file');
-  const uploadBtn = document.getElementById('upload-btn');
-  const uploadStatus = document.getElementById('upload-status');
+  import jsQR from 'jsqr';
 
-  let selectedFile: File | null = null;
+  // DOM Elements
+  const dropZone = document.getElementById('drop-zone') as HTMLDivElement;
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const imagePreview = document.getElementById('image-preview') as HTMLDivElement;
+  const previewImg = document.getElementById('preview-img') as HTMLImageElement;
+  const removeImageBtn = document.getElementById('remove-image') as HTMLButtonElement;
+  const verifyBtn = document.getElementById('verify-btn') as HTMLButtonElement;
+  const verifyStatus = document.getElementById('verify-status') as HTMLDivElement;
+  const verifyResult = document.getElementById('verify-result') as HTMLDivElement;
+  const qrCanvas = document.getElementById('qr-canvas') as HTMLCanvasElement;
+  const scanningEl = document.getElementById('scanning') as HTMLDivElement;
+  const qrFoundEl = document.getElementById('qr-found') as HTMLDivElement;
+  const qrNotFoundEl = document.getElementById('qr-not-found') as HTMLDivElement;
 
+  let extractedQRData: string | null = null;
+
+  // File drop/select handlers
   dropZone.addEventListener('click', () => fileInput.click());
 
   dropZone.addEventListener('dragover', (e) => {
@@ -154,58 +190,130 @@ const user = Astro.locals.user;
     dropZone.classList.remove('border-indigo-500', 'bg-indigo-50');
     const files = e.dataTransfer?.files;
     if (files && files.length > 0) {
-      handleFile(files[0]);
+      handleImageFile(files[0]);
     }
   });
 
   fileInput.addEventListener('change', (e) => {
-    const files = (e.target).files;
+    const files = (e.target as HTMLInputElement).files;
     if (files && files.length > 0) {
-      handleFile(files[0]);
+      handleImageFile(files[0]);
     }
   });
 
-  function handleFile(file: File) {
-    selectedFile = file;
-    fileName.textContent = file.name;
-    fileSize.textContent = `${(file.size / 1024).toFixed(2)} KB`;
-    uploadPreview.classList.remove('hidden');
-    uploadStatus.classList.add('hidden');
-  }
+  removeImageBtn.addEventListener('click', resetUpload);
 
-  removeFileBtn.addEventListener('click', () => {
-    selectedFile = null;
+  function resetUpload() {
+    extractedQRData = null;
     fileInput.value = '';
-    uploadPreview.classList.add('hidden');
-  });
-
-  uploadBtn.addEventListener('click', async () => {
-    if (!selectedFile) return;
-
-    uploadStatus.textContent = 'Processing slip... (OCR functionality will be integrated here)';
-    uploadStatus.classList.remove('hidden', 'bg-red-50', 'text-red-700', 'bg-green-50', 'text-green-700');
-    uploadStatus.classList.add('bg-blue-50', 'text-blue-700');
-
-    // Placeholder for OCR processing
-    await processSlipOCR(selectedFile);
-  });
-
-  // Placeholder OCR function
-  async function processSlipOCR(file: File): Promise<void> {
-    // Simulate processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    uploadStatus.textContent = 'OCR processing is ready to be integrated with an external API.';
-    uploadStatus.classList.remove('bg-blue-50', 'text-blue-700');
-    uploadStatus.classList.add('bg-green-50', 'text-green-700');
-
-    // Reset after showing message
-    setTimeout(() => {
-      selectedFile = null;
-      fileInput.value = '';
-      uploadPreview.classList.add('hidden');
-    }, 3000);
+    imagePreview.classList.add('hidden');
+    dropZone.classList.remove('hidden');
+    verifyBtn.disabled = true;
+    verifyStatus.classList.add('hidden');
+    verifyResult.classList.add('hidden');
+    scanningEl.classList.add('hidden');
+    qrFoundEl.classList.add('hidden');
+    qrNotFoundEl.classList.add('hidden');
   }
+
+  async function handleImageFile(file: File) {
+    if (!file.type.startsWith('image/')) {
+      showError('Please upload an image file');
+      return;
+    }
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      previewImg.src = e.target?.result as string;
+      dropZone.classList.add('hidden');
+      imagePreview.classList.remove('hidden');
+      scanQRCode(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function scanQRCode(imageDataUrl: string) {
+    scanningEl.classList.remove('hidden');
+    qrFoundEl.classList.add('hidden');
+    qrNotFoundEl.classList.add('hidden');
+    verifyBtn.disabled = true;
+
+    const img = new Image();
+    img.onload = () => {
+      const ctx = qrCanvas.getContext('2d')!;
+      qrCanvas.width = img.width;
+      qrCanvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+
+      const imageData = ctx.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
+      const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
+
+      scanningEl.classList.add('hidden');
+
+      if (qrCode && qrCode.data) {
+        extractedQRData = qrCode.data;
+        qrFoundEl.classList.remove('hidden');
+        verifyBtn.disabled = false;
+      } else {
+        qrNotFoundEl.classList.remove('hidden');
+        extractedQRData = null;
+      }
+    };
+    img.src = imageDataUrl;
+  }
+
+  function showError(message: string) {
+    verifyStatus.textContent = message;
+    verifyStatus.classList.remove('hidden', 'bg-green-50', 'text-green-700');
+    verifyStatus.classList.add('bg-red-50', 'text-red-700');
+  }
+
+  // Verify button handler
+  verifyBtn.addEventListener('click', async () => {
+    if (!extractedQRData) return;
+
+    verifyBtn.disabled = true;
+    verifyBtn.textContent = 'Verifying...';
+    verifyStatus.classList.add('hidden');
+    verifyResult.classList.add('hidden');
+
+    try {
+      const response = await fetch('/api/slip/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ qrData: extractedQRData }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        const payment = result.payment;
+        document.getElementById('result-amount')!.textContent = `฿${payment.amount.toFixed(2)}`;
+        document.getElementById('result-ref')!.textContent = payment.transRef;
+        document.getElementById('result-sender')!.textContent = `${payment.senderName} (${payment.sendingBank})`;
+        document.getElementById('result-receiver')!.textContent = `${payment.receiverName} (${payment.receivingBank})`;
+        document.getElementById('result-datetime')!.textContent = `${payment.transDate} ${payment.transTime}`;
+
+        verifyResult.classList.remove('hidden');
+        
+        // Reset after success
+        setTimeout(() => {
+          resetUpload();
+          loadFinancialData();
+          loadRecentPayments();
+        }, 3000);
+      } else {
+        showError(result.error || 'Failed to verify slip');
+      }
+    } catch (error) {
+      console.error('Verification error:', error);
+      showError('An error occurred. Please try again.');
+    } finally {
+      verifyBtn.disabled = false;
+      verifyBtn.textContent = 'Verify Slip';
+    }
+  });
 
   // Load financial data
   async function loadFinancialData() {
@@ -213,15 +321,54 @@ const user = Astro.locals.user;
       const response = await fetch('/api/payments/summary');
       if (response.ok) {
         const data = await response.json();
-        document.getElementById('monthly-total').textContent = `฿${data.monthly.toFixed(2)}`;
-        document.getElementById('yearly-total').textContent = `฿${data.yearly.toFixed(2)}`;
-        document.getElementById('total').textContent = `฿${data.total.toFixed(2)}`;
+        document.getElementById('monthly-total')!.textContent = `฿${data.monthly.toFixed(2)}`;
+        document.getElementById('yearly-total')!.textContent = `฿${data.yearly.toFixed(2)}`;
+        document.getElementById('total')!.textContent = `฿${data.total.toFixed(2)}`;
       }
     } catch (error) {
       console.error('Failed to load financial data:', error);
     }
   }
 
+  // Load recent payments
+  async function loadRecentPayments() {
+    try {
+      const response = await fetch('/api/payments/recent');
+      if (response.ok) {
+        const payments = await response.json();
+        const paymentsList = document.getElementById('payments-list')!;
+
+        if (payments.length === 0) {
+          paymentsList.innerHTML = '<p class="text-sm text-gray-500 text-center py-8">No payments yet. Upload your first slip above!</p>';
+          return;
+        }
+
+        paymentsList.innerHTML = payments.map((p: any) => `
+          <div class="flex items-center justify-between rounded-lg bg-gray-50 p-4">
+            <div class="flex items-center gap-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
+                <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-gray-900">฿${p.amount.toFixed(2)}</p>
+                <p class="text-xs text-gray-500">${p.transDate || new Date(p.createdAt).toLocaleDateString()}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-xs text-gray-500">${p.sendingBank || ''} → ${p.receivingBank || ''}</p>
+              <p class="text-xs text-gray-400">${p.transRef || ''}</p>
+            </div>
+          </div>
+        `).join('');
+      }
+    } catch (error) {
+      console.error('Failed to load recent payments:', error);
+    }
+  }
+
   // Load on page load
   loadFinancialData();
+  loadRecentPayments();
 </script>

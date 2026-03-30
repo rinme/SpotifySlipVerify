@@ -56,8 +56,19 @@ export function getSQLiteDB(): Database {
         userId INTEGER NOT NULL,
         amount REAL NOT NULL,
         status TEXT DEFAULT 'pending',
-        slipUrl TEXT,
-        ocrData TEXT,
+        transRef TEXT,
+        sendingBank TEXT,
+        receivingBank TEXT,
+        senderName TEXT,
+        receiverName TEXT,
+        transDate TEXT,
+        transTime TEXT,
+        slipData TEXT,
+        flagged INTEGER DEFAULT 0,
+        flagReason TEXT,
+        reviewedBy INTEGER,
+        reviewedAt TEXT,
+        rejectionReason TEXT,
         month INTEGER NOT NULL,
         year INTEGER NOT NULL,
         createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -67,6 +78,7 @@ export function getSQLiteDB(): Database {
 
       CREATE INDEX IF NOT EXISTS idx_payments_user ON payments(userId);
       CREATE INDEX IF NOT EXISTS idx_payments_date ON payments(year, month);
+      CREATE INDEX IF NOT EXISTS idx_payments_transref ON payments(transRef);
     `);
 
     console.log('SQLite database initialized');

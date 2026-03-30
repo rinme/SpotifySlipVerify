@@ -41,7 +41,7 @@ export const GET: APIRoute = async ({ request }) => {
               userId: userObjectId,
               month: currentMonth,
               year: currentYear,
-              status: 'verified'
+              status: 'approved'
             }
           },
           {
@@ -56,7 +56,7 @@ export const GET: APIRoute = async ({ request }) => {
             $match: {
               userId: userObjectId,
               year: currentYear,
-              status: 'verified'
+              status: 'approved'
             }
           },
           {
@@ -70,7 +70,7 @@ export const GET: APIRoute = async ({ request }) => {
           {
             $match: {
               userId: userObjectId,
-              status: 'verified'
+              status: 'approved'
             }
           },
           {
@@ -96,17 +96,17 @@ export const GET: APIRoute = async ({ request }) => {
 
       const monthly = db.prepare(`
         SELECT SUM(amount) as total FROM payments
-        WHERE userId = ? AND month = ? AND year = ? AND status = 'verified'
+        WHERE userId = ? AND month = ? AND year = ? AND status = 'approved'
       `).get(session.id, currentMonth, currentYear) as { total: number | null };
 
       const yearly = db.prepare(`
         SELECT SUM(amount) as total FROM payments
-        WHERE userId = ? AND year = ? AND status = 'verified'
+        WHERE userId = ? AND year = ? AND status = 'approved'
       `).get(session.id, currentYear) as { total: number | null };
 
       const total = db.prepare(`
         SELECT SUM(amount) as total FROM payments
-        WHERE userId = ? AND status = 'verified'
+        WHERE userId = ? AND status = 'approved'
       `).get(session.id) as { total: number | null };
 
       return new Response(
